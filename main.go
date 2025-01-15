@@ -11,13 +11,23 @@ import (
 
 const PORT int = 5555
 
+func WriteJson(w *http.ResponseWriter, data interface{}) {
+
+	(*w).Header().Set("Content-Type", "application/json")
+	json.NewEncoder((*w)).Encode(data)
+}
+
 func KernelInfo(w http.ResponseWriter, r *http.Request) {
 
-	k := global.getRunner("kernel")
+	k := global.GetRunner("kernel")
 	data := k.GetData()
+	WriteJson(&w, data)
+}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
+func ProcessInfo(w http.ResponseWriter, r *http.Request) {
+	k := global.GetRunner("process")
+	data := k.GetData()
+	WriteJson(&w, data)
 }
 
 func main() {
@@ -38,6 +48,7 @@ func main() {
 	})
 
 	mux.Handle("/kernel", http.HandlerFunc(KernelInfo))
+	mux.Handle("/processes", http.HandlerFunc(ProcessInfo))
 
 	log.Printf("[*] Server started at http://localhost:%d\n", PORT)
 	http.Serve(listener, mux)
