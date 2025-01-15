@@ -1,9 +1,6 @@
 package main
 
 import (
-	"log"
-	"os"
-	"strings"
 	"sync"
 	"time"
 )
@@ -13,6 +10,10 @@ const PROC_PATH string = "/proc"
 type KernelJson struct {
 	Uptime      string `json:"uptime"`
 	IdleProcess string `json:"idle_process"`
+	Version     string `json:"version"`
+	CpuName     string `json:"cpu_name"`
+	CpuCores    string `json:"cpu_cores"`
+	MemTotal    string `json:"mem_total"`
 }
 
 type Runner struct {
@@ -32,20 +33,6 @@ func (m *Master) getRunner(name string) *Runner {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	return m.runners[name]
-}
-
-func readUptime(k *KernelJson, path string) {
-	content, err := os.ReadFile(path)
-
-	if err != nil {
-		log.Printf("[!] Error on reading %s %v", path, err)
-		return
-	}
-
-	parsed := strings.Split(string(content), " ")
-
-	k.Uptime = parsed[0]
-	k.IdleProcess = parsed[1]
 }
 
 func (r *Runner) GetData() interface{} {
@@ -77,6 +64,9 @@ func StartRunners() {
 
 	commands := make(map[string]func(*KernelJson, string))
 	commands["/proc/uptime"] = readUptime
+	commands["/proc/version"] = readVersion
+	commands["/proc/cpuinfo"] = readCpu
+	commands["/proc/meminfo"] = readMem
 
 	go r1.KernelRunner(commands)
 
