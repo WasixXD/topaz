@@ -63,11 +63,11 @@ func (r *Runner) KernelRunner(commands map[string]func(*KernelJson, string)) {
 		<-r.ticker.C
 
 		r.mu.Lock()
-		for i, v := range commands {
+		for file_path, function := range commands {
 			// evil stuff?
-			field, _ := r.data.(KernelJson)
-			v(&field, i)
-			r.data = field
+			kernelStruct, _ := r.data.(KernelJson)
+			function(&kernelStruct, file_path)
+			r.data = kernelStruct
 		}
 
 		r.mu.Unlock()

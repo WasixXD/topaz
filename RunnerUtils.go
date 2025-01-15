@@ -10,49 +10,46 @@ const (
 	TOKEN_MODEL_NAME       = "model name"
 	TOKEN_CPU_CORES        = "cpu cores"
 	TOKEN_POWER_MANAGEMENT = "power management"
+	TOKEN_SPACE            = " "
+	TOKEN_NEW_LINE         = "\n"
+	TOKEN_COMMA            = ":"
 )
 
-func readUptime(k *KernelJson, path string) {
+func fileContent(path string) []byte {
 	content, err := os.ReadFile(path)
 
 	if err != nil {
-		log.Printf("[!] Error on reading %s %v", path, err)
-		return
+		log.Fatalf("[!] Error on reading %s %v", path, err)
 	}
 
-	parsed := strings.Split(string(content), " ")
+	return content
+}
+
+func readUptime(k *KernelJson, path string) {
+	content := fileContent(path)
+
+	parsed := strings.Split(string(content), TOKEN_SPACE)
 
 	k.Uptime = parsed[0]
 	k.IdleProcess = parsed[1]
 }
 
 func readVersion(k *KernelJson, path string) {
-	content, err := os.ReadFile(path)
-
-	if err != nil {
-		log.Printf("[!] Error on reading %s %v", path, err)
-		return
-	}
-
+	content := fileContent(path)
 	k.Version = string(content)
 }
 
 func readCpu(k *KernelJson, path string) {
-	content, err := os.ReadFile(path)
-
-	if err != nil {
-		log.Printf("[!] Error on reading %s %v", path, err)
-		return
-	}
+	content := fileContent(path)
 
 	// TODO: USE STRING BUILDER
 	parsed := string(content)
 	block, _, _ := strings.Cut(parsed, TOKEN_POWER_MANAGEMENT)
 
-	lines := strings.Split(block, "\n")
+	lines := strings.Split(block, TOKEN_NEW_LINE)
 
 	for _, line := range lines {
-		values := strings.Split(line, ":")
+		values := strings.Split(line, TOKEN_COMMA)
 		if strings.Contains(line, TOKEN_MODEL_NAME) {
 			k.CpuName = strings.TrimSpace(values[1])
 		}
@@ -66,17 +63,12 @@ func readCpu(k *KernelJson, path string) {
 }
 
 func readMem(k *KernelJson, path string) {
-	content, err := os.ReadFile(path)
-
-	if err != nil {
-		log.Printf("[!] Error on reading %s %v", path, err)
-		return
-	}
+	content := fileContent(path)
 
 	parsed := string(content)
 
-	lines := strings.Split(parsed, "\n")
+	lines := strings.Split(parsed, TOKEN_NEW_LINE)
 	line := lines[0]
-	values := strings.Split(line, ":")
+	values := strings.Split(line, TOKEN_NEW_LINE)
 	k.MemTotal = strings.TrimSpace(values[1])
 }
