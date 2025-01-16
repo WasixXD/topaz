@@ -69,6 +69,6 @@ func readMem(k *KernelJson, path string) {
 
 	lines := strings.Split(parsed, TOKEN_NEW_LINE)
 	line := lines[0]
-	values := strings.Split(line, TOKEN_NEW_LINE)
+	values := strings.Split(line, TOKEN_COMMA)
 	k.MemTotal = strings.TrimSpace(values[1])
 }

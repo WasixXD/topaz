@@ -26,6 +26,7 @@ func KernelInfo(w http.ResponseWriter, r *http.Request) {
 
 func ProcessInfo(w http.ResponseWriter, r *http.Request) {
 	k := global.GetRunner("process")
+	k.SetProcesses(5)
 	data := k.GetData()
 	WriteJson(&w, data)
 }
